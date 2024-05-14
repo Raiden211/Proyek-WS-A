@@ -5,6 +5,7 @@ use restomoyai;
 drop table users;
 drop table user_type;
 drop table api_log;
+drop table recipe;
 
 create table users (
     `id` varchar(20) not null primary key,
@@ -13,6 +14,7 @@ create table users (
     `phone_number` int not null,
     `password` varchar(255) not null,
     `dob` varchar(20) not null,
+    `profile_pic` varchar(255) not null,
     `saldo` int not null,
     `api_key` varchar(15) not null,
     `api_hit` int not null,
@@ -36,7 +38,20 @@ create table api_log (
 create table recipe (
     `id` int not null primary key,
     `name` varchar(255) not null,
-    `amount` int not null
+    `amount` int not null,
+    `price` int not null,
+    `image` int not null,
+    `vitamin_amount` decimal(18,4),
+    `sugar_amount` decimal(18,2),
+    `calories` decimal(18,2),
+    `alcohol` decimal(18,2),
+    `caffeine` decimal(18,2),
+    `protein` decimal(18,2),
+    `calsium` decimal(18,2)
+);
+
+create table food (
+    `name` varchar(255)
 );
 
 insert into user_type(`id`,`type`) values ("1","Free");
