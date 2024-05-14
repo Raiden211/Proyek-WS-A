@@ -35,6 +35,11 @@ create table api_log (
     `api_per_use` int not null
 );
 
+create table api_use (
+    `id_user` varchar(20) not null,
+    `api_use` int,
+);
+
 create table recipe (
     `id` int not null primary key,
     `name` varchar(255) not null,
