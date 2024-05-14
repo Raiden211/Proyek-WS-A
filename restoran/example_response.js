@@ -1,6 +1,6 @@
 {
   input: "https://api.spoonacular.com/food/ingredients/9266/information?amount=1",
-  x-api_key: "(Tidak bisa di-spoil)",
+  x-api_key: "(Tidak bisa di-spoil 🗿)",
   query: {
     amount: 1
   }
