@@ -13,6 +13,7 @@ create table users (
     `phone_number` int not null,
     `password` varchar(255) not null,
     `dob` varchar(20) not null,
+    `saldo` int not null,
     `api_key` varchar(15) not null,
     `api_hit` int not null,
     `role` int not null,
@@ -30,6 +31,12 @@ create table api_log (
     `id_type` int not null,
     `api_quota` int not null,
     `api_per_use` int not null
+);
+
+create table recipe (
+    `id` int not null primary key,
+    `name` varchar(255) not null,
+    `amount` int not null
 );
 
 insert into user_type(`id`,`type`) values ("1","Free");
