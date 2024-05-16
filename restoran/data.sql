@@ -63,10 +63,6 @@ create table recipe (
     `calsium` decimal(18,2)
 );
 
-create table food (
-    `name` varchar(255)
-);
-
 insert into user_role(`id`,`nama`) values ("1","administrator restoran");
 insert into user_role(`id`,`nama`) values ("2","user");
 insert into user_role(`id`,`nama`) values ("3","supplier");
