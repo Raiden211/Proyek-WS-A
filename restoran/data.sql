@@ -2,10 +2,12 @@ create database restomoyai;
 
 use restomoyai;
 
-drop table users;
-drop table user_type;
-drop table api_log;
-drop table recipe;
+drop table if exists users;
+drop table if exists user_role;
+drop table if exists user_type;
+drop table if exists api_log;
+drop table if exists api_use;
+drop table if exists recipe;
 
 create table users (
     `id` varchar(20) not null primary key,
@@ -23,6 +25,11 @@ create table users (
     `type_id` int not null
 );
 
+create table user_role (
+    `id` int not null primary key,
+    `nama` varchar(60) not null
+);
+
 create table user_type (
     `id` int not null primary key,
     `type`varchar (50) not null
@@ -37,7 +44,8 @@ create table api_log (
 
 create table api_use (
     `id_user` varchar(20) not null,
-    `api_use` int,
+    `api_use` int not null,
+    `used_at` varchar(50) not null
 );
 
 create table recipe (
@@ -58,6 +66,11 @@ create table recipe (
 create table food (
     `name` varchar(255)
 );
+
+insert into user_role(`id`,`nama`) values ("1","administrator restoran");
+insert into user_role(`id`,`nama`) values ("2","user");
+insert into user_role(`id`,`nama`) values ("3","supplier");
+insert into user_role(`id`,`nama`) values ("4","pengurus makanan");
 
 insert into user_type(`id`,`type`) values ("1","Free");
 insert into user_type(`id`,`type`) values ("2","Member");
