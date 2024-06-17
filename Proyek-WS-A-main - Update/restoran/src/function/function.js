@@ -1,249 +1,342 @@
-const db2 = require('../config/configsql');
-const Users = require('../models/Users');
-const Recipes = require('../models/recipes');
-const Joi = require('joi').extend(require('@joi/date'));
-const jwt = require('jsonwebtoken');
-const axios = require('axios');
+const db2 = require("../config/configsql");
+const Users = require("../models/Users");
+const Recipes = require("../models/recipes");
+const Menus = require('../models/menus');
+const Joi = require("joi").extend(require("@joi/date"));
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const JWT_KEY = "moyaiislife";
 
 const registerUser = async (req, res) => {
-    const { password, confirm_password, dob } = req.body;
-    const username = req.body.username;
-    const email = req.body.email;
-    const phone_number = req.body.phone_number;
-    const role = req.body.role;
-    const profile_pic = req.body.profile_pic;
+  const { password, confirm_password, dob } = req.body;
+  const username = req.body.username;
+  const email = req.body.email;
+  const phone_number = req.body.phone_number;
+  const role = req.body.role;
+  const profile_pic = req.body.profile_pic;
 
-    const schema = Joi.object({
-        username: Joi.string().pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$')).required(),
-        email: Joi.string().email().required(),
-        phone_number: Joi.number().required(),
-        password: Joi.string().min(6).pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$')).required(),
-        confirm_password: Joi.string().valid(Joi.ref('password')).required(),
-        dob: Joi.date().format('DD/MM/YYYY').required(),
-        role: Joi.number().required(),
-        profile_pic: Joi.required()
-    });
+  const schema = Joi.object({
+    username: Joi.string()
+      .pattern(new RegExp("^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$"))
+      .required(),
+    email: Joi.string().email().required(),
+    phone_number: Joi.number().required(),
+    password: Joi.string()
+      .min(6)
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$"))
+      .required(),
+    confirm_password: Joi.string().valid(Joi.ref("password")).required(),
+    dob: Joi.date().format("DD/MM/YYYY").required(),
+    role: Joi.number().required(),
+    profile_pic: Joi.required(),
+  });
 
-    try {
-        await schema.validateAsync(req.body);
-    } catch (error) {
-        const errorMessage = error.message.replace(/".*?"\s/, '');
-        return res.status(400).send({ message: errorMessage });
-    }
+  try {
+    await schema.validateAsync(req.body);
+  } catch (error) {
+    const errorMessage = error.message.replace(/".*?"\s/, "");
+    return res.status(400).send({ message: errorMessage });
+  }
 
-    let id = 1;
-    let paddingLength = id >= 10 ? 3 : 4;
-    let userid = "U" + id.toString().padStart(paddingLength, '0');
-    let idada = await Users.findByPk(userid);
-    while (idada) {
-        id++;
-        paddingLength = id >= 10 ? 3 : 4;
-        userid = "U" + id.toString().padStart(paddingLength, '0');
-        idada = await Users.findByPk(userid);
-    }
+  let id = 1;
+  let paddingLength = id >= 10 ? 3 : 4;
+  let userid = "U" + id.toString().padStart(paddingLength, "0");
+  let idada = await Users.findByPk(userid);
+  while (idada) {
+    id++;
+    paddingLength = id >= 10 ? 3 : 4;
+    userid = "U" + id.toString().padStart(paddingLength, "0");
+    idada = await Users.findByPk(userid);
+  }
 
-    let key = Math.random().toString(36).slice(3);
-    let apiada = await Users.findOne({ where: { api_key: key } });
+  let key = Math.random().toString(36).slice(3);
+  let apiada = await Users.findOne({ where: { api_key: key } });
 
-    while (apiada) {
-        key = Math.random().toString(36).slice(3);
-        apiada = await Users.findOne({ where: { api_key: key } });
-    }
+  while (apiada) {
+    key = Math.random().toString(36).slice(3);
+    apiada = await Users.findOne({ where: { api_key: key } });
+  }
 
-    let insert = await Users.create({
-        id: userid,
-        username: username,
-        email: email,
-        phone_number: phone_number,
-        password: password,
-        dob: dob,
-        profile_pic: profile_pic,
-        saldo: 0,
-        api_key: key,
-        api_hit: 240,
-        role: role,
-        status: 1,
-        type_id: 1
-    });
+  let insert = await Users.create({
+    id: userid,
+    username: username,
+    email: email,
+    phone_number: phone_number,
+    password: password,
+    dob: dob,
+    profile_pic: profile_pic,
+    saldo: 0,
+    api_key: key,
+    api_hit: 240,
+    role: role,
+    status: 1,
+    type_id: 1,
+  });
 
-    return res.status(201).send({
-        message: "Register sukses",
-        data: insert
-    });
-}
+  return res.status(201).send({
+    message: "Register sukses",
+    data: insert,
+  });
+};
 
-const login = async(req,res) => {
-    const password = req.body.password;
-    const username = req.body.username;
+const login = async (req, res) => {
+  const password = req.body.password;
+  const username = req.body.username;
 
-    const schema = Joi.object({
-        username: Joi.string().required(),
-        password: Joi.string().required(),
-    });
+  const schema = Joi.object({
+    username: Joi.string().required(),
+    password: Joi.string().required(),
+  });
 
-    try {
-        await schema.validateAsync(req.body);
-    } catch (error) {
-        const errorMessage = error.message.replace(/".*?"\s/, '');
-        return res.status(400).send({ message: errorMessage });
-    }
+  try {
+    await schema.validateAsync(req.body);
+  } catch (error) {
+    const errorMessage = error.message.replace(/".*?"\s/, "");
+    return res.status(400).send({ message: errorMessage });
+  }
 
-    let getrole = await Users.findOne({where: {username: username}});
+  let getrole = await Users.findOne({ where: { username: username } });
 
-    let token = jwt.sign({
-        username: username,
-        role: getrole.role
-    }, JWT_KEY, {expiresIn: '120m'});
+  let token = jwt.sign(
+    {
+      username: username,
+      role: getrole.role,
+    },
+    JWT_KEY,
+    { expiresIn: "120m" }
+  );
 
-    return res.status(200).send({
-        username: username,
-        password: password,
-        token: token
-    });
-}
+  return res.status(200).send({
+    username: username,
+    password: password,
+    token: token,
+  });
+};
 
 const getIngredientInfo = async (ingredientId) => {
-    const API_KEY = '2c9abc22a9824b79aa4b66320fd9b356';
-    try {
-        const response = await axios.get(`https://api.spoonacular.com/food/ingredients/${ingredientId}/information`, {
-            params: {
-                apiKey: API_KEY,
-                amount: 1
-            },
-        });
-        return response.data;
-    } catch (error) {
-        throw new Error('Error');
-    }
+  const API_KEY = "2c9abc22a9824b79aa4b66320fd9b356";
+  try {
+    const response = await axios.get(
+      `https://api.spoonacular.com/food/ingredients/${ingredientId}/information`,
+      {
+        params: {
+          apiKey: API_KEY,
+          amount: 1,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Error");
+  }
+};
+
+const getMenuInfo = async (menuId) => {
+  const API_KEY = "2c9abc22a9824b79aa4b66320fd9b356";
+  try {
+    const response = await axios.get(
+      `https://api.spoonacular.com/recipes/${menuId}/information`,
+      {
+        params: {
+          apiKey: API_KEY,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw new Error("Error");
+  }
 };
 
 const addRecipe = async (req, res) => {
-    const { ingredientId } = req.body;
+  const { ingredientId } = req.body;
 
-    try {
-        const ingredientInfo = await getIngredientInfo(ingredientId);
-        
-        const name = ingredientInfo.name;
-        const amount = ingredientInfo.amount; 
-        const price = ingredientInfo.estimatedCost.value / 100;
-        const image = ingredientInfo.image;
-        const nutrition = ingredientInfo.nutrition.nutrients;
-        const vitaminC = nutrition.find(nutrient => nutrient.name === 'Vitamin C')?.amount || 0;
-        const vitaminD = nutrition.find(nutrient => nutrient.name === 'Vitamin D')?.amount || 0;
-        const vitaminE = nutrition.find(nutrient => nutrient.name === 'Vitamin E')?.amount || 0;
-        const sugar = nutrition.find(nutrient => nutrient.name === 'Sugar')?.amount || 0;
-        const calories = nutrition.find(nutrient => nutrient.name === 'Calories')?.amount || 0;
-        const alcohol = nutrition.find(nutrient => nutrient.name === 'Alcohol')?.amount || 0;
-        const caffeine = nutrition.find(nutrient => nutrient.name === 'Caffeine')?.amount || 0;
-        const protein = nutrition.find(nutrient => nutrient.name === 'Protein')?.amount || 0;
-        const calsium = nutrition.find(nutrient => nutrient.name === 'Calcium')?.amount || 0;
+  try {
+    const ingredientInfo = await getIngredientInfo(ingredientId);
 
-        // return res.status(200).json(`${name} + ${amount} + ${price} + ${image} + ${vitaminC} + ${sugar} + ${calories} + ${alcohol} + ${caffeine} + ${protein} + ${calcium}`)
-        const newRecipe = await Recipes.create({
-            name,
-            amount,
-            price,
-            image,
-            vitamin_c: vitaminC,
-            sugar_amount: sugar,
-            calories,
-            alcohol,
-            caffeine,
-            protein,
-            calsium,
-            vitamin_d: vitaminD,
-            vitamin_e: vitaminE
-        });
+    const name = ingredientInfo.name;
+    const amount = ingredientInfo.amount;
+    const price = ingredientInfo.estimatedCost.value / 100;
+    const image = ingredientInfo.image;
+    const nutrition = ingredientInfo.nutrition.nutrients;
+    const vitaminC =
+      nutrition.find((nutrient) => nutrient.name === "Vitamin C")?.amount || 0;
+    const vitaminD =
+      nutrition.find((nutrient) => nutrient.name === "Vitamin D")?.amount || 0;
+    const vitaminE =
+      nutrition.find((nutrient) => nutrient.name === "Vitamin E")?.amount || 0;
+    const sugar =
+      nutrition.find((nutrient) => nutrient.name === "Sugar")?.amount || 0;
+    const calories =
+      nutrition.find((nutrient) => nutrient.name === "Calories")?.amount || 0;
+    const alcohol =
+      nutrition.find((nutrient) => nutrient.name === "Alcohol")?.amount || 0;
+    const caffeine =
+      nutrition.find((nutrient) => nutrient.name === "Caffeine")?.amount || 0;
+    const protein =
+      nutrition.find((nutrient) => nutrient.name === "Protein")?.amount || 0;
+    const calsium =
+      nutrition.find((nutrient) => nutrient.name === "Calcium")?.amount || 0;
 
-        return res.status(201).send({
-            message: "Recipe berhasil ditambah!",
-            data: newRecipe
-        });
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
-    }
+    // return res.status(200).json(`${name} + ${amount} + ${price} + ${image} + ${vitaminC} + ${sugar} + ${calories} + ${alcohol} + ${caffeine} + ${protein} + ${calcium}`)
+    const newRecipe = await Recipes.create({
+      name,
+      amount,
+      price,
+      image,
+      vitamin_c: vitaminC,
+      sugar_amount: sugar,
+      calories,
+      alcohol,
+      caffeine,
+      protein,
+      calsium,
+      vitamin_d: vitaminD,
+      vitamin_e: vitaminE,
+    });
+
+    return res.status(201).send({
+      message: "Recipe berhasil ditambah!",
+      data: newRecipe,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
 const editVitamins = async (req, res) => {
-    const { id } = req.params;
-    const { vitamin_c, vitamin_d, vitamin_e } = req.body;
+  const { id } = req.params;
+  const { vitamin_c, vitamin_d, vitamin_e } = req.body;
 
-    try {
-        const recipe = await Recipes.findByPk(id);
+  try {
+    const recipe = await Recipes.findByPk(id);
 
-        if (!recipe) {
-            return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
-        }
-
-        recipe.vitamin_c = vitamin_c;
-        recipe.vitamin_d = vitamin_d;
-        recipe.vitamin_e = vitamin_e;
-        await recipe.save();
-
-        return res.status(200).send({
-            message: "Vitamin Berhasil Diupdate!",
-            data: recipe
-        });
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
+    if (!recipe) {
+      return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
     }
+
+    recipe.vitamin_c = vitamin_c;
+    recipe.vitamin_d = vitamin_d;
+    recipe.vitamin_e = vitamin_e;
+    await recipe.save();
+
+    return res.status(200).send({
+      message: "Vitamin Berhasil Diupdate!",
+      data: recipe,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
 const editAmount = async (req, res) => {
-    const { id } = req.params;
-    const { amount } = req.body;
+  const { id } = req.params;
+  const { amount } = req.body;
 
-    try {
-        const recipe = await Recipes.findByPk(id);
+  try {
+    const recipe = await Recipes.findByPk(id);
 
-        if (!recipe) {
-            return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
-        }
-
-        recipe.amount = amount;
-        await recipe.save();
-
-        return res.status(200).send({
-            message: "Jumlah Berhasil Diupdate!",
-            data: recipe
-        });
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
+    if (!recipe) {
+      return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
     }
+
+    recipe.amount = amount;
+    await recipe.save();
+
+    return res.status(200).send({
+      message: "Jumlah Berhasil Diupdate!",
+      data: recipe,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
 const deleteRecipe = async (req, res) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const recipe = await Recipes.findByPk(id);
+  try {
+    const recipe = await Recipes.findByPk(id);
 
-        if (!recipe) {
-            return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
-        }
-
-        await recipe.destroy();
-
-        return res.status(200).send({
-            message: "Ingedient Berhasil Dihapus!"
-        });
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
+    if (!recipe) {
+      return res.status(404).send({ message: "Ingedient Tidak Ketemu" });
     }
+
+    await recipe.destroy();
+
+    return res.status(200).send({
+      message: "Ingedient Berhasil Dihapus!",
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
 const showAllRecipes = async (req, res) => {
-    try {
-        const recipes = await Recipes.findAll();
+  try {
+    const recipes = await Recipes.findAll();
 
-        return res.status(200).send({
-            message: "Ingedient Berhasil Difetch!",
-            data: recipes
-        });
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
-    }
+    return res.status(200).send({
+      message: "Ingedient Berhasil Difetch!",
+      data: recipes,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
 };
 
-module.exports = { registerUser, login, addRecipe, editVitamins, deleteRecipe, showAllRecipes, editAmount };
+const addMenu = async (req, res) => {
+  const userData = req.user;
+
+  if (userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
+  const { menuId } = req.body;
+
+  try {
+    const menuInfo = await getMenuInfo(menuId);
+    const name = menuInfo.title;
+    const servings = menuInfo.servings;
+    const price = menuInfo.pricePerServing;
+    const vegetarian = menuInfo.vegetarian 
+    const vegan = menuInfo.vegan
+    const glutenFree = menuInfo.glutenFree
+    const dairyFree = menuInfo.dairyFree
+    const veryHealthy = menuInfo.veryHealthy
+    const cheap = menuInfo.cheap
+    const veryPopular = menuInfo.veryPopular
+    const sustainable = menuInfo.sustainable
+
+    const newMenu = await Menus.create({
+      name,
+      servings,
+      price,
+      vegetarian,
+      vegan,
+      glutenFree,
+      dairyFree,
+      veryHealthy,
+      cheap,
+      veryPopular,
+      sustainable,
+    });
+
+    return res.status(200).send({
+      message: "Menu Berhasil Ditambah!",
+      data: newMenu,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  login,
+  addRecipe,
+  editVitamins,
+  deleteRecipe,
+  showAllRecipes,
+  editAmount,
+  addMenu,
+};

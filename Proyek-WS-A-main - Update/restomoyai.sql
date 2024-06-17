@@ -20,6 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `restomoyai`
 --
+DROP DATABASE IF EXISTS restomoyai;
 CREATE DATABASE IF NOT EXISTS `restomoyai` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `restomoyai`;
 
@@ -158,6 +159,27 @@ INSERT INTO `user_type` (`id`, `type`) VALUES
 (2, 'Member'),
 (3, 'Professional');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `menu`
+--
+
+CREATE TABLE `menu` (
+  `id` INT(11) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `vegetarian` BOOLEAN NOT NULL,
+  `vegan` BOOLEAN NOT NULL,
+  `glutenFree` BOOLEAN NOT NULL,
+  `dairyFree` BOOLEAN NOT NULL,
+  `veryHealthy` BOOLEAN NOT NULL,
+  `cheap` BOOLEAN NOT NULL,
+  `veryPopular` BOOLEAN NOT NULL,
+  `sustainable` BOOLEAN NOT NULL,
+  `price` DECIMAL(10, 2) NOT NULL,
+  `servings` INT(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -193,6 +215,12 @@ ALTER TABLE `user_type`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `menu`
+--
+ALTER TABLE `menu`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -200,6 +228,13 @@ ALTER TABLE `user_type`
 -- AUTO_INCREMENT for table `recipe`
 --
 ALTER TABLE `recipe`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+COMMIT;
+
+--
+-- AUTO_INCREMENT for table `menu`
+--
+ALTER TABLE `menu`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 

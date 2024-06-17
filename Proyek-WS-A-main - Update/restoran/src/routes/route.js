@@ -17,4 +17,7 @@ router.put("/recipes/:id/vitamins",midrecipes.authenticateToken, func.editVitami
 router.delete("/recipes/delete/:id",midrecipes.authenticateToken, func.deleteRecipe);
 router.get("/recipes",midrecipes.authenticateToken,func.showAllRecipes);
 
+//Menus
+router.post("/menus/addMenu", midrecipes.authenticateToken,func.addMenu);
+
 module.exports = router;
