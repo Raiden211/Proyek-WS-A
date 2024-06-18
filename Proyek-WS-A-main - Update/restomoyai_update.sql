@@ -20,6 +20,7 @@ SET time_zone = "+00:00";
 --
 -- Database: `restomoyai`
 --
+DROP DATABASE IF EXISTS `restomoyai`;
 CREATE DATABASE IF NOT EXISTS `restomoyai` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 USE `restomoyai`;
 
@@ -62,7 +63,7 @@ CREATE TABLE `api_use` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `menu`
+-- Table structure for table `ingredients`
 --
 
 CREATE TABLE ingredients (
@@ -71,6 +72,28 @@ CREATE TABLE ingredients (
   amount FLOAT NOT NULL,
   menuId INT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ingredients`
+--
+
+INSERT INTO `ingredients` (`id`, `name`, `amount`, `menuId`)
+VALUES
+(1, 'Tomato Sauce', 0.5, 1),
+(2, 'Mozzarella Cheese', 1, 1),
+(3, 'Basil', 0.1, 1),
+(4, 'Burger Patty', 1, 2),
+(5, 'Lettuce', 0.2, 2),
+(6, 'Tomato', 0.3, 2),
+(7, 'Gluten-Free Flour', 1.5, 3),
+(8, 'Milk', 1, 3),
+(9, 'Egg', 2, 3),
+(10, 'Romaine Lettuce', 1, 4),
+(11, 'Parmesan Cheese', 0.2, 4),
+(12, 'Croutons', 0.3, 4),
+(13, 'Chicken Breast', 1, 5),
+(14, 'Bread', 2, 5),
+(15, 'Mayonnaise', 0.1, 5);
 
 -- --------------------------------------------------------
 
@@ -92,6 +115,18 @@ CREATE TABLE `menu` (
   `price` decimal(10,2) NOT NULL,
   `servings` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `menu`
+--
+
+INSERT INTO `menu` (`id`, `name`, `vegetarian`, `vegan`, `glutenFree`, `dairyFree`, `veryHealthy`, `cheap`, `veryPopular`, `sustainable`, `price`, `servings`)
+VALUES
+(1, 'Margherita Pizza', 1, 0, 0, 0, 0, 1, 1, 1, 8.99, 2),
+(2, 'Vegan Burger', 1, 1, 1, 1, 1, 0, 1, 1, 10.99, 1),
+(3, 'Gluten-Free Pancakes', 1, 0, 1, 1, 1, 0, 1, 0, 7.99, 3),
+(4, 'Caesar Salad', 0, 0, 0, 0, 1, 1, 0, 0, 6.99, 1),
+(5, 'Grilled Chicken Sandwich', 0, 0, 0, 0, 1, 1, 1, 0, 9.99, 1);
 
 -- --------------------------------------------------------
 
