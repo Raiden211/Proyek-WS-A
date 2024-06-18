@@ -346,6 +346,68 @@ const addMenu = async (req, res) => {
   }
 };
 
+const showAllMenus = async (req, res) => {
+  try {
+    const Menu = await Menus.findAll();
+
+    return res.status(200).send({
+      message: "Ingedient Berhasil Difetch!",
+      data: Menu,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const editMenuPrice = async (req, res) => {
+  const { id } = req.params;
+  const { price } = req.body;
+
+  try {
+    const menu = await Menus.findByPk(id);
+
+    if (!menu) {
+      return res.status(404).send({ message: "Menu Tidak Ketemu" });
+    }
+
+    menu.price = price;
+    await menu.save();
+
+    return res.status(200).send({
+      message: "Jumlah Berhasil Diupdate!",
+      data: menu,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const deleteMenu = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Find the menu by primary key (id)
+    const menu = await Menus.findByPk(id);
+
+    if (!menu) {
+      return res.status(404).send({ message: "Menu Tidak Ketemu" });
+    }
+
+    // Find and delete all ingredients associated with the menu
+    await Ingredients.destroy({
+      where: { menuId: id }
+    });
+
+    // Delete the menu
+    await menu.destroy();
+
+    return res.status(200).send({
+      message: "Menu Berhasil Dihapus!",
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
 
 
 module.exports = {
@@ -357,4 +419,7 @@ module.exports = {
   showAllRecipes,
   editAmount,
   addMenu,
+  showAllMenus,
+  editMenuPrice,
+  deleteMenu
 };

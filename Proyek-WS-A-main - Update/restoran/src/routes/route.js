@@ -19,5 +19,7 @@ router.get("/recipes",midrecipes.authenticateToken,func.showAllRecipes);
 
 //Menus
 router.post("/menus/addMenu", midrecipes.authenticateToken,func.addMenu);
-
+router.get("/menus", midrecipes.authenticateToken,func.showAllMenus);
+router.put("/menus/price/:id", midrecipes.authenticateToken,func.editMenuPrice);
+router.delete("/menus/delete/:id", midrecipes.authenticateToken,func.deleteMenu);
 module.exports = router;
