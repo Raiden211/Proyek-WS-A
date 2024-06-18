@@ -6,6 +6,7 @@ const Ingredients = require('../models/ingredient');
 const Joi = require("joi").extend(require("@joi/date"));
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
+const Ingredient = require("../models/ingredient");
 const JWT_KEY = "moyaiislife";
 
 const registerUser = async (req, res) => {
@@ -289,18 +290,19 @@ const showAllRecipes = async (req, res) => {
 
 const addMenu = async (req, res) => {
   const userData = req.user;
-  
-  console.log("Request body:", req.body); // Log the request body for debugging
 
-  if (userData.role !== 4) {
+  if (userData.role !== 1 && userData.role !== 4) {
     return res.status(403).send({ message: "Unauthorized" });
   }
   
   const { menuId, ingredients } = req.body;
 
   if (!menuId) {
-    console.log("menuId is missing in the request body");
     return res.status(400).send({ message: "menuId is required" });
+  }
+  const checkMenu = await Menus.findByPk(menuId);
+  if (checkMenu) {
+    return res.status(400).send({ message: "menu already exist" });
   }
 
   if (!Array.isArray(ingredients) || ingredients.length === 0) {
@@ -351,7 +353,7 @@ const showAllMenus = async (req, res) => {
     const Menu = await Menus.findAll();
 
     return res.status(200).send({
-      message: "Ingedient Berhasil Difetch!",
+      message: "Menu Berhasil Difetch!",
       data: Menu,
     });
   } catch (error) {
@@ -362,7 +364,11 @@ const showAllMenus = async (req, res) => {
 const editMenuPrice = async (req, res) => {
   const { id } = req.params;
   const { price } = req.body;
+  const userData = req.user;
 
+  if (userData.role !== 1 && userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
   try {
     const menu = await Menus.findByPk(id);
 
@@ -384,25 +390,134 @@ const editMenuPrice = async (req, res) => {
 
 const deleteMenu = async (req, res) => {
   const { id } = req.params;
-
+  if (userData.role !== 1 && userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
   try {
-    // Find the menu by primary key (id)
     const menu = await Menus.findByPk(id);
 
     if (!menu) {
       return res.status(404).send({ message: "Menu Tidak Ketemu" });
     }
 
-    // Find and delete all ingredients associated with the menu
     await Ingredients.destroy({
       where: { menuId: id }
     });
 
-    // Delete the menu
     await menu.destroy();
 
     return res.status(200).send({
       message: "Menu Berhasil Dihapus!",
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const addIngredients = async (req, res) => {
+  const userData = req.user;
+
+  if (userData.role !== 1 && userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
+  
+  const { name, amount, menuId } = req.body;
+  if (!name) {
+    return res.status(400).send({ message: "name is required" });
+  }
+  if (!amount) {
+    return res.status(400).send({ message: "amount is required" });
+  }
+  if (!menuId) {
+    return res.status(400).send({ message: "menuId is required" });
+  }
+  const ingredients = await Menus.findByPk(menuId);
+  if (!ingredients) {
+    return res.status(400).send({ message: "menu must exist first!" });
+  }
+
+  try {
+    const newIngredients = await Ingredient.create({
+      name: name,
+      amount: amount,
+      menuId: menuId,
+    });
+
+    return res.status(200).send({
+      message: "ingredients successfully added!",
+      data: newIngredients,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const editIngredientAmount = async (req, res) => {
+  const { id } = req.params;
+  const { amount } = req.body;
+  const userData = req.user;
+
+  if (userData.role !== 1 && userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
+  try {
+    const ingredients = await Ingredient.findByPk(id);
+
+    if (!ingredients) {
+      return res.status(404).send({ message: "Ingredients Tidak Ketemu" });
+    }
+
+    ingredients.amount = amount;
+    await ingredients.save();
+
+    return res.status(200).send({
+      message: "Jumlah Berhasil Diupdate!",
+      data: ingredients,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const showAllIngredients = async (req, res) => {
+  try {
+    const ingredients = await Ingredient.findAll();
+
+    return res.status(200).send({
+      message: "Ingredient Berhasil Difetch!",
+      data: ingredients,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const deleteIngredients = async (req, res) => {
+  const { id } = req.params;
+  const userData = req.user; // Assuming req.user is populated by your authentication middleware
+
+  if (userData.role !== 1 && userData.role !== 4) {
+    return res.status(403).send({ message: "Unauthorized" });
+  }
+
+  try {
+    const ingredient = await Ingredients.findByPk(id);
+
+    if (!ingredient) {
+      return res.status(404).send({ message: "Ingredient not found" });
+    }
+
+    const menuId = ingredient.menuId;
+    const ingredientCount = await Ingredients.count({ where: { menuId } });
+
+    if (ingredientCount <= 1) {
+      return res.status(400).send({ message: "Cannot delete the last ingredient of a menu" });
+    }
+
+    await ingredient.destroy();
+
+    return res.status(200).send({
+      message: "Ingredient deleted successfully",
     });
   } catch (error) {
     return res.status(500).send({ message: error.message });
@@ -421,5 +536,9 @@ module.exports = {
   addMenu,
   showAllMenus,
   editMenuPrice,
-  deleteMenu
+  deleteMenu,
+  addIngredients,
+  showAllIngredients,
+  editIngredientAmount,
+  deleteIngredients
 };

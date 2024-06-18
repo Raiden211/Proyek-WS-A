@@ -22,4 +22,10 @@ router.post("/menus/addMenu", midrecipes.authenticateToken,func.addMenu);
 router.get("/menus", midrecipes.authenticateToken,func.showAllMenus);
 router.put("/menus/price/:id", midrecipes.authenticateToken,func.editMenuPrice);
 router.delete("/menus/delete/:id", midrecipes.authenticateToken,func.deleteMenu);
+
+//Ingredients
+router.post("/ingredients/addIngredients", midrecipes.authenticateToken,func.addIngredients);
+router.get("/ingredients/showIngredients", midrecipes.authenticateToken,func.showAllIngredients);
+router.put("/ingredients/amount/:id", midrecipes.authenticateToken,func.editIngredientAmount);
+router.delete("/ingredients/delete/:id", midrecipes.authenticateToken,func.deleteIngredients);
 module.exports = router;
