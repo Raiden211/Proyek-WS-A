@@ -2,6 +2,7 @@ const db2 = require("../config/configsql");
 const Users = require("../models/Users");
 const Recipes = require("../models/recipes");
 const Menus = require('../models/menus');
+const Ingredients = require('../models/ingredient');
 const Joi = require("joi").extend(require("@joi/date"));
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
@@ -144,6 +145,7 @@ const getMenuInfo = async (menuId) => {
     );
     return response.data;
   } catch (error) {
+    console.log(error);
     throw new Error("Error");
   }
 };
@@ -287,48 +289,64 @@ const showAllRecipes = async (req, res) => {
 
 const addMenu = async (req, res) => {
   const userData = req.user;
+  
+  console.log("Request body:", req.body); // Log the request body for debugging
 
   if (userData.role !== 4) {
     return res.status(403).send({ message: "Unauthorized" });
   }
-  const { menuId } = req.body;
+  
+  const { menuId, ingredients } = req.body;
+
+  if (!menuId) {
+    console.log("menuId is missing in the request body");
+    return res.status(400).send({ message: "menuId is required" });
+  }
+
+  if (!Array.isArray(ingredients) || ingredients.length === 0) {
+    console.log("Ingredients array is missing or empty in the request body");
+    return res.status(400).send({ message: "Ingredients must be a non-empty array" });
+  }
 
   try {
     const menuInfo = await getMenuInfo(menuId);
-    const name = menuInfo.title;
-    const servings = menuInfo.servings;
-    const price = menuInfo.pricePerServing;
-    const vegetarian = menuInfo.vegetarian 
-    const vegan = menuInfo.vegan
-    const glutenFree = menuInfo.glutenFree
-    const dairyFree = menuInfo.dairyFree
-    const veryHealthy = menuInfo.veryHealthy
-    const cheap = menuInfo.cheap
-    const veryPopular = menuInfo.veryPopular
-    const sustainable = menuInfo.sustainable
 
     const newMenu = await Menus.create({
-      name,
-      servings,
-      price,
-      vegetarian,
-      vegan,
-      glutenFree,
-      dairyFree,
-      veryHealthy,
-      cheap,
-      veryPopular,
-      sustainable,
+      id: menuId,
+      name: menuInfo.title,
+      servings: menuInfo.servings,
+      price: menuInfo.pricePerServing,
+      vegetarian: menuInfo.vegetarian,
+      vegan: menuInfo.vegan,
+      glutenFree: menuInfo.glutenFree,
+      dairyFree: menuInfo.dairyFree,
+      veryHealthy: menuInfo.veryHealthy,
+      cheap: menuInfo.cheap,
+      veryPopular: menuInfo.veryPopular,
+      sustainable: menuInfo.sustainable,
     });
 
+    const ingredientPromises = ingredients.map(ingredient => 
+      Ingredients.create({
+        name: ingredient.name,
+        amount: ingredient.amount,
+        menuId: menuId,
+      })
+    );
+
+    await Promise.all(ingredientPromises);
+
     return res.status(200).send({
-      message: "Menu Berhasil Ditambah!",
+      message: "Menu and ingredients successfully added!",
       data: newMenu,
     });
   } catch (error) {
+    console.log("Error while adding menu:", error);
     return res.status(500).send({ message: error.message });
   }
 };
+
+
 
 module.exports = {
   registerUser,

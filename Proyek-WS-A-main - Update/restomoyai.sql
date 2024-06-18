@@ -180,6 +180,19 @@ CREATE TABLE `menu` (
   `servings` INT(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `menu`
+--
+
+CREATE TABLE ingredients (
+  id INT(11) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  amount FLOAT NOT NULL,
+  menuId INT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -221,6 +234,12 @@ ALTER TABLE `menu`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `menu`
+--
+ALTER TABLE `ingredients`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -232,9 +251,9 @@ ALTER TABLE `recipe`
 COMMIT;
 
 --
--- AUTO_INCREMENT for table `menu`
+-- AUTO_INCREMENT for table `ingredients`
 --
-ALTER TABLE `menu`
+ALTER TABLE `ingredients`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
